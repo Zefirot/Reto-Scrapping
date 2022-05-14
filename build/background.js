@@ -1,7 +1,7 @@
 (() => {
   // src/config.js
   var URLS = {
-    "base": "https://www.linkedin.com/search/results/people/?keywords=fullstack"
+    base: "https://www.linkedin.com/search/results/people/?keywords="
   };
   var config_default = URLS;
 
@@ -4733,22 +4733,6 @@
 
   // src/background.js
   var tabId;
-  chrome.action.onClicked.addListener((tab) => {
-    console.log("Se consulto");
-    console.log(config_default.base);
-    chrome.tabs.create({
-      url: config_default.base
-    }, (tab2) => {
-      tabId = tab2.id;
-      setTimeout(() => {
-        chrome.scripting.executeScript({
-          target: { tabId: tab2.id },
-          files: ["./scripts/getUrls.js"]
-        });
-      }, 5e3);
-    });
-    console.log("opasdasdasd");
-  });
   var guardian = 0;
   var urls;
   chrome.runtime.onConnect.addListener((port) => {
@@ -4780,6 +4764,20 @@
           });
         }, 5e3);
         guardian++;
+      });
+    } else if (port.name === "popUpClick") {
+      port.onMessage.addListener(async (message) => {
+        chrome.tabs.create({
+          url: config_default.base + message.filterTo
+        }, (tab) => {
+          tabId = tab.id;
+          setTimeout(() => {
+            chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              files: ["./scripts/getUrls.js"]
+            });
+          }, 1e3);
+        });
       });
     }
   });

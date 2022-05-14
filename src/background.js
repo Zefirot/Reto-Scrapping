@@ -2,32 +2,6 @@ import URLS from "./config.js"
 import { db } from "./lib/db.js"
 
 let tabId;
-
-chrome.action.onClicked.addListener(tab=>{
-    console.log("Se consulto")
-    console.log(URLS.base);
-    chrome.tabs.create({
-        url: URLS.base
-    }, tab =>{
-        tabId = tab.id
-
-        setTimeout(()=>{
-            chrome.scripting.executeScript({
-                target:{tabId: tab.id},
-                files:["./scripts/getUrls.js"] 
-            }) 
-        },5000)
-
-
-        /* chrome.scripting.executeScript({
-            target:{tabId: tab.id},
-            files:["./scripts/getUrls.js"]
-        }) */
-        
-    })
-    console.log("opasdasdasd");
-})
-
 let guardian = 0
 let urls;
 
@@ -61,13 +35,11 @@ chrome.runtime.onConnect.addListener(port=>{
                 .catch(error=>console.log(error)) */
         })
     }else if(port.name==="safePortUrls"){
-        port.onMessage.addListener(async message=>{
-            
+        port.onMessage.addListener(async message=>{            
             urls = message.urlsProfiles 
             
             const [url] = urls
             await chrome.tabs.update(tabId,{url})
-
 
             setTimeout(()=>{
                 chrome.scripting.executeScript({
@@ -76,11 +48,22 @@ chrome.runtime.onConnect.addListener(port=>{
                 }) 
             },5000)
             guardian++
-                
-            
-                
+        })
+    }
+    else if (port.name === "popUpClick"){
+        port.onMessage.addListener(async message=>{
 
-        
+            chrome.tabs.create({
+                url: URLS.base + message.filterTo
+            }, tab =>{
+                tabId = tab.id
+                setTimeout(()=>{ //Esperamos a que se cree la tab antes de inyectar
+                    chrome.scripting.executeScript({
+                        target:{tabId: tab.id},
+                        files:["./scripts/getUrls.js"] 
+                    }) 
+                },1000)
+            })
         })
     }
 })
