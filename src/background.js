@@ -3,22 +3,35 @@ import { db } from "./lib/db.js"
 
 let tabId;
 
-chrome.action.onClicked.addListener(tab=>{ //Se agre la pagina de linkedin y se ejecuta el getURL de perfiles
+chrome.action.onClicked.addListener(tab=>{
+    console.log("Se consulto")
+    console.log(URLS.base);
     chrome.tabs.create({
         url: URLS.base
     }, tab =>{
         tabId = tab.id
-        chrome.scripting.executeScript({
+
+        setTimeout(()=>{
+            chrome.scripting.executeScript({
+                target:{tabId: tab.id},
+                files:["./scripts/getUrls.js"] 
+            }) 
+        },5000)
+
+
+        /* chrome.scripting.executeScript({
             target:{tabId: tab.id},
             files:["./scripts/getUrls.js"]
-        })
+        }) */
+        
     })
+    console.log("opasdasdasd");
 })
 
 let guardian = 0
 let urls;
 
-chrome.runtime.onConnect.addListener(port=>{ //Se escucha los puertos para saber en donde scrappear
+chrome.runtime.onConnect.addListener(port=>{
     if(port.name==="safePort"){
         port.onMessage.addListener(async message=>{
 
@@ -26,16 +39,18 @@ chrome.runtime.onConnect.addListener(port=>{ //Se escucha los puertos para saber
             console.log("datos guardados en indexdb")
             console.log(guardian)
             if(guardian<urls.length){
-                await chrome.tabs.update(tabId,{url:urls[guardian]}) //Se redirige hacia las paginas de los perfiles
+                await chrome.tabs.update(tabId,{url:urls[guardian]})
     
-                setTimeout(()=>{ //Se duerme el proceso para evitar problemas de sincronismo
+    
+                setTimeout(()=>{
                     chrome.scripting.executeScript({
                         target: {tabId},
-                        files: ['./scripts/scrapper.js']    // Se ejecuta el script para tomar datos de los perfiles
+                        files: ['./scripts/scrapper.js']    
                     }) 
                 },5000)
     
                 guardian++
+
             }
             /* fetch("http://localhost:3000/profiles",{
                 method: "POST",
@@ -53,6 +68,7 @@ chrome.runtime.onConnect.addListener(port=>{ //Se escucha los puertos para saber
             const [url] = urls
             await chrome.tabs.update(tabId,{url})
 
+
             setTimeout(()=>{
                 chrome.scripting.executeScript({
                     target: {tabId},
@@ -60,6 +76,10 @@ chrome.runtime.onConnect.addListener(port=>{ //Se escucha los puertos para saber
                 }) 
             },5000)
             guardian++
+                
+            
+                
+
         
         })
     }

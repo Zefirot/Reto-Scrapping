@@ -1,9 +1,9 @@
 (() => {
   // src/config.js
-  var URL = {
-    base: "https://www.linkedin.com/search/results/people/?keywords=fullstack"
+  var URLS = {
+    "base": "https://www.linkedin.com/search/results/people/?keywords=fullstack"
   };
-  var config_default = URL;
+  var config_default = URLS;
 
   // node_modules/dexie/dist/modern/dexie.mjs
   var _global = typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : global;
@@ -4734,15 +4734,20 @@
   // src/background.js
   var tabId;
   chrome.action.onClicked.addListener((tab) => {
+    console.log("Se consulto");
+    console.log(config_default.base);
     chrome.tabs.create({
       url: config_default.base
     }, (tab2) => {
       tabId = tab2.id;
-      chrome.scripting.executeScript({
-        target: { tabId: tab2.id },
-        files: ["./scripts/getUrls.js"]
-      });
+      setTimeout(() => {
+        chrome.scripting.executeScript({
+          target: { tabId: tab2.id },
+          files: ["./scripts/getUrls.js"]
+        });
+      }, 5e3);
     });
+    console.log("opasdasdasd");
   });
   var guardian = 0;
   var urls;

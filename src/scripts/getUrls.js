@@ -6,6 +6,7 @@ import SELECTORS from "./selectors.js"
 waitForElement("h1")
     .then(()=>{
         autoscrolling(30).then(()=>{
+            
             const urlsProfiles = $$(SELECTORS.search.urlsProfiles).map(element=>element.href.split("?")[0])
             
             let port = chrome.runtime.connect({name:"safePortUrls"})

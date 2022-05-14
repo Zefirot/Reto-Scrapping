@@ -1,5 +1,4 @@
-const URL = {
-    //base:"https://www.linkedin.com/search/results/people/?keywords=fullstack",
-    base:"https://www.linkedin.com/search/results/people/?keywords="
+const URLS = {
+    "base":"https://www.linkedin.com/search/results/people/?keywords=fullstack"
 }
-export default URL
+export default URLS
