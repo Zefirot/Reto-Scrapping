@@ -5,24 +5,24 @@ let tabId;
 let guardian = 0
 let urls;
 
-chrome.runtime.onConnect.addListener(port=>{
-    if(port.name==="safePort"){
-        port.onMessage.addListener(async message=>{
+chrome.runtime.onConnect.addListener(port => {
+    if (port.name === "safePort") {
+        port.onMessage.addListener(async message => {
 
-            await db.profiles.add(message)
+            console.log(message.linkedin);
+            console.log(message.email);
+            //await db.profiles.add(message)
             console.log("datos guardados en indexdb")
-            console.log(guardian)
-            if(guardian<urls.length){
-                await chrome.tabs.update(tabId,{url:urls[guardian]})
-    
-    
-                setTimeout(()=>{
+            if (guardian < urls.length) {
+                await chrome.tabs.update(tabId, { url: urls[guardian] })
+
+                setTimeout(() => {
                     chrome.scripting.executeScript({
-                        target: {tabId},
-                        files: ['./scripts/scrapper.js']    
-                    }) 
-                },5000)
-    
+                        target: { tabId },
+                        files: ['./scripts/scrapper.js']
+                    })
+                }, 5000)
+
                 guardian++
 
             }
@@ -34,35 +34,51 @@ chrome.runtime.onConnect.addListener(port=>{
                 .then(data=>console.log(data))
                 .catch(error=>console.log(error)) */
         })
-    }else if(port.name==="safePortUrls"){
-        port.onMessage.addListener(async message=>{            
-            urls = message.urlsProfiles 
-            
-            const [url] = urls
-            await chrome.tabs.update(tabId,{url})
+    }
+    else if (port.name === "safePortBasicData") {
+        port.onMessage.addListener(async message => {
+            chrome.tabs.create({
+                url: URLS.baseLinkedin + message.urlContacInfo
+            }, tab => {
+                setTimeout(async () => { //Esperamos a que se cree la tab antes de inyectar
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        files: ["./scripts/scrapContactInfo.js"]
+                    });
+                    chrome.tabs.remove(tab.id);
+                }, 1000)
+            });
 
-            setTimeout(()=>{
+    });
+    }
+    else if (port.name === "safePortUrls") {
+        port.onMessage.addListener(async message => {
+            urls = message.urlsProfiles
+
+            const [url] = urls
+            await chrome.tabs.update(tabId, { url })
+
+            setTimeout(() => {
                 chrome.scripting.executeScript({
-                    target: {tabId},
-                    files: ['./scripts/scrapper.js']    
-                }) 
-            },5000)
+                    target: { tabId },
+                    files: ['./scripts/scrapper.js']
+                })
+            }, 5000)
             guardian++
         })
     }
-    else if (port.name === "popUpClick"){
-        port.onMessage.addListener(async message=>{
-
+    else if (port.name === "popUpClick") {
+        port.onMessage.addListener(async message => {
             chrome.tabs.create({
                 url: URLS.base + message.filterTo
-            }, tab =>{
+            }, tab => {
                 tabId = tab.id
-                setTimeout(()=>{ //Esperamos a que se cree la tab antes de inyectar
+                setTimeout(() => { //Esperamos a que se cree la tab antes de inyectar
                     chrome.scripting.executeScript({
-                        target:{tabId: tab.id},
-                        files:["./scripts/getUrls.js"] 
-                    }) 
-                },1000)
+                        target: { tabId: tab.id },
+                        files: ["./scripts/getUrls.js"]
+                    })
+                }, 1000)
             })
         })
     }

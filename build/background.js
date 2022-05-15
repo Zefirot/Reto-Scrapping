@@ -1,7 +1,8 @@
 (() => {
   // src/config.js
   var URLS = {
-    base: "https://www.linkedin.com/search/results/people/?keywords="
+    base: "https://www.linkedin.com/search/results/people/?keywords=",
+    baseLinkedin: "https://www.linkedin.com/"
   };
   var config_default = URLS;
 
@@ -4738,9 +4739,9 @@
   chrome.runtime.onConnect.addListener((port) => {
     if (port.name === "safePort") {
       port.onMessage.addListener(async (message) => {
-        await db.profiles.add(message);
+        console.log(message.linkedin);
+        console.log(message.email);
         console.log("datos guardados en indexdb");
-        console.log(guardian);
         if (guardian < urls.length) {
           await chrome.tabs.update(tabId, { url: urls[guardian] });
           setTimeout(() => {
@@ -4751,6 +4752,20 @@
           }, 5e3);
           guardian++;
         }
+      });
+    } else if (port.name === "safePortBasicData") {
+      port.onMessage.addListener(async (message) => {
+        chrome.tabs.create({
+          url: config_default.baseLinkedin + message.urlContacInfo
+        }, (tab) => {
+          setTimeout(async () => {
+            await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              files: ["./scripts/scrapContactInfo.js"]
+            });
+            chrome.tabs.remove(tab.id);
+          }, 1e3);
+        });
       });
     } else if (port.name === "safePortUrls") {
       port.onMessage.addListener(async (message) => {

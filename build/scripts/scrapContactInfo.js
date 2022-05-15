@@ -1,19 +1,4 @@
 (() => {
-  // src/functions/autoscrolling.js
-  var autoscrolling = (pixels) => new Promise((resolve, reject) => {
-    let pixelstoScroll = pixels;
-    console.log(pixelstoScroll);
-    const idInterval = setInterval(() => {
-      window.scrollTo(0, pixelstoScroll);
-      pixelstoScroll += pixels;
-      if (pixelstoScroll > document.body.scrollHeight) {
-        clearInterval(idInterval);
-        resolve(true);
-      }
-    }, 100);
-  });
-  var autoscrolling_default = autoscrolling;
-
   // src/functions/selector.js
   var $ = (selector, node = document) => node.querySelector(selector);
   var $$ = (selector, node = document) => [...node.querySelectorAll(selector)];
@@ -52,13 +37,13 @@
   };
   var selectors_default = SELECTORS;
 
-  // src/scripts/getUrls.js
+  // src/scripts/scrapContactInfo.js
   waitForElement_default("h1").then(() => {
-    autoscrolling_default(30).then(() => {
-      const urlsProfiles = $$(selectors_default.search.urlsProfiles).map((element) => element.href.split("?")[0]);
-      let port = chrome.runtime.connect({ name: "safePortUrls" });
-      port.postMessage({ urlsProfiles });
-    });
+    const contactData = $$(selectors_default.profile.css.contactData).map((elem) => elem.attributes.href.value);
+    const linkedin = contactData.filter((elem) => elem.includes("linkedin"));
+    const email = contactData.filter((elem) => elem.includes("@"));
+    let port = chrome.runtime.connect({ name: "safePort" });
+    port.postMessage({ linkedin, email });
   }).catch(() => {
     console.log("intentelo mas tarde");
   });

@@ -16,6 +16,7 @@
 
   // src/functions/selector.js
   var $ = (selector, node = document) => node.querySelector(selector);
+  var $$ = (selector, node = document) => [...node.querySelectorAll(selector)];
   var $x = (xpath, node = document) => {
     const collection = document.evaluate(xpath, node, null, XPathResult.ANY_TYPE, null);
     let result = collection.iterateNext();
@@ -45,7 +46,8 @@
   var SELECTORS = {
     profile: {
       css: {
-        fullname: "h1"
+        fullname: "h1",
+        contactData: ".pv-contact-info__contact-type .pv-contact-info__ci-container > a"
       },
       xpath: {
         educationItems: "(//section[.//span[contains(text(),'Educaci\xF3n')]]//ul)[1]/li",
@@ -53,7 +55,9 @@
       }
     },
     search: {
-      urlsProfiles: ".search-results-container .ph0 ul.reusable-search__entity-result-list > li span.entity-result__title-text a"
+      urlsProfiles: ".search-results-container .ph0 ul.reusable-search__entity-result-list > li span.entity-result__title-text a",
+      urlContacInfo: ".pv-text-details__separator > a",
+      urlExtraInfo: ".pvs-list__footer-wrapper > div > a"
     }
   };
   var selectors_default = SELECTORS;
@@ -64,10 +68,14 @@
       const fullName = $(selectors_default.profile.css.fullname).textContent;
       const experienceItems = $x(selectors_default.profile.xpath.experiencieItems);
       const educationItems = $x(selectors_default.profile.xpath.educationItems);
+      const extraInfo = $$(selectors_default.search.urlExtraInfo);
+      const contacInfo = $(selectors_default.search.urlContacInfo);
       const pruebaExperience = experienceItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
       const pruebaEducation = educationItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
-      let port = chrome.runtime.connect({ name: "safePort" });
-      port.postMessage({ fullName, pruebaExperience, pruebaEducation });
+      const urlExtraInfo = extraInfo.map((elem) => elem.attributes.href.value).filter((elem) => elem.includes("expe") || elem.includes("education"));
+      const urlContacInfo = contacInfo.attributes.href.value;
+      let port = chrome.runtime.connect({ name: "safePortBasicData" });
+      port.postMessage({ fullName, pruebaExperience, pruebaEducation, urlExtraInfo, urlContacInfo });
     });
   }).catch(() => {
     console.log("intentelo mas tarde");
