@@ -22,7 +22,8 @@
     profile: {
       css: {
         fullname: "h1",
-        contactData: ".pv-contact-info__contact-type .pv-contact-info__ci-container > a"
+        contactData: ".pv-contact-info__contact-type .pv-contact-info__ci-container > a",
+        extraExperience: "section .pvs-list__container .scaffold-finite-scroll >div>ul .pvs-list__paged-list-item"
       },
       xpath: {
         educationItems: "(//section[.//span[contains(text(),'Educaci\xF3n')]]//ul)[1]/li",
@@ -40,10 +41,10 @@
   // src/scripts/scrapContactInfo.js
   waitForElement_default("h1").then(() => {
     const contactData = $$(selectors_default.profile.css.contactData).map((elem) => elem.attributes.href.value);
-    const linkedin = contactData.filter((elem) => elem.includes("linkedin"));
-    const email = contactData.filter((elem) => elem.includes("@"));
+    const linkedin = contactData.find((elem) => elem.includes("linkedin"));
+    const email = contactData.find((elem) => elem.includes("@"));
     let port = chrome.runtime.connect({ name: "safePort" });
-    port.postMessage({ linkedin, email });
+    port.postMessage({ linkedin, email, type: 1 });
   }).catch(() => {
     console.log("intentelo mas tarde");
   });

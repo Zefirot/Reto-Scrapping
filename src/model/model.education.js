@@ -1,5 +1,9 @@
 class Education {
-    constructor(place,degree, period)
+    constructor(institutionName,description,period){
+        this.institutionName = institutionName;
+        this.description = description;
+        this.period = period;
+    }
 }
 
 export default Education

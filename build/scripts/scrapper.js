@@ -47,7 +47,8 @@
     profile: {
       css: {
         fullname: "h1",
-        contactData: ".pv-contact-info__contact-type .pv-contact-info__ci-container > a"
+        contactData: ".pv-contact-info__contact-type .pv-contact-info__ci-container > a",
+        extraExperience: "section .pvs-list__container .scaffold-finite-scroll >div>ul .pvs-list__paged-list-item"
       },
       xpath: {
         educationItems: "(//section[.//span[contains(text(),'Educaci\xF3n')]]//ul)[1]/li",
@@ -64,18 +65,26 @@
 
   // src/scripts/scrapper.js
   waitForElement_default("h1").then(() => {
-    autoscrolling_default(30).then(() => {
+    autoscrolling_default(50).then(() => {
       const fullName = $(selectors_default.profile.css.fullname).textContent;
       const experienceItems = $x(selectors_default.profile.xpath.experiencieItems);
       const educationItems = $x(selectors_default.profile.xpath.educationItems);
-      const extraInfo = $$(selectors_default.search.urlExtraInfo);
+      const extraInfo = $$(selectors_default.search.urlExtraInfo).map((elem) => elem.attributes.href.value);
       const contacInfo = $(selectors_default.search.urlContacInfo);
-      const pruebaExperience = experienceItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
-      const pruebaEducation = educationItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
-      const urlExtraInfo = extraInfo.map((elem) => elem.attributes.href.value).filter((elem) => elem.includes("expe") || elem.includes("education"));
+      const basicExperience = experienceItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
+      const basicEducation = educationItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
+      const urlExtraExperience = extraInfo.find((elem) => elem.includes("expe"));
+      const urlExtraEducation = extraInfo.find((elem) => elem.includes("education"));
       const urlContacInfo = contacInfo.attributes.href.value;
       let port = chrome.runtime.connect({ name: "safePortBasicData" });
-      port.postMessage({ fullName, pruebaExperience, pruebaEducation, urlExtraInfo, urlContacInfo });
+      port.postMessage({
+        fullName,
+        basicExperience,
+        basicEducation,
+        urlExtraExperience,
+        urlExtraEducation,
+        urlContacInfo
+      });
     });
   }).catch(() => {
     console.log("intentelo mas tarde");

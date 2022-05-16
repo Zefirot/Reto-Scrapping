@@ -4732,40 +4732,103 @@
     profiles: "++id, fullname, pruebaExperience, pruebaEducation"
   });
 
+  // src/model/model.profile.js
+  var Profile = class {
+    constructor(fullName, experience, education, urlExtraExperience, urlExtraEducation) {
+      this.fullName = fullName;
+      this.experience = experience;
+      this.education = education;
+      this.urlExtraExperience = urlExtraExperience;
+      this.urlExtraEducation = urlExtraEducation;
+    }
+    hasMoreInfo() {
+      return this.urlExtraExperience || this.urlExtraEducation;
+    }
+    addContactInfo(contactInfo) {
+      this.contactInfo = contactInfo;
+    }
+    addExtraExperienceInfo(extraInfo) {
+      this.experience = extraInfo;
+    }
+  };
+  var model_profile_default = Profile;
+
+  // src/functions/nextProfile.js
+  var nextProfile = (tabId2, urls2, guardian2) => {
+    if (guardian2 < urls2.length) {
+      chrome.tabs.update(tabId2, { url: urls2[guardian2] });
+      setTimeout(() => {
+        chrome.scripting.executeScript({
+          target: { tabId: tabId2 },
+          files: ["./scripts/scrapper.js"]
+        });
+      }, 5e3);
+    }
+  };
+  var nextProfile_default = nextProfile;
+
   // src/background.js
   var tabId;
   var guardian = 0;
   var urls;
+  var profile;
   chrome.runtime.onConnect.addListener((port) => {
     if (port.name === "safePort") {
-      port.onMessage.addListener(async (message) => {
-        console.log(message.linkedin);
-        console.log(message.email);
-        console.log("datos guardados en indexdb");
-        if (guardian < urls.length) {
-          await chrome.tabs.update(tabId, { url: urls[guardian] });
-          setTimeout(() => {
-            chrome.scripting.executeScript({
-              target: { tabId },
-              files: ["./scripts/scrapper.js"]
-            });
-          }, 5e3);
+      port.onMessage.addListener((message) => {
+        console.log(message.type);
+        if (message.type === 1) {
+          console.log("Se llego hasta la carga de contacto");
+          profile.addContactInfo({ linkedin: message.linkedin, email: message.email });
+        }
+        if (message.type === 2) {
+          profile.addExtraExperienceInfo(message.arrayOfJobs);
+          profile.urlExtraExperience = null;
+          console.log(profile);
+        }
+        console.log(profile.urlExtraExperience);
+        if (!profile.hasMoreInfo()) {
+          console.log("datos guardados en indexdb");
+          nextProfile_default(tabId, urls, guardian);
           guardian++;
         }
       });
     } else if (port.name === "safePortBasicData") {
       port.onMessage.addListener(async (message) => {
-        chrome.tabs.create({
-          url: config_default.baseLinkedin + message.urlContacInfo
-        }, (tab) => {
-          setTimeout(async () => {
-            await chrome.scripting.executeScript({
-              target: { tabId: tab.id },
-              files: ["./scripts/scrapContactInfo.js"]
+        profile = new model_profile_default(message.fullName, message.basicExperience, message.basicEducation, message.urlExtraExperience, message.urlExtraEducation);
+        console.log("URL Experiencia extra");
+        console.log(profile.urlExtraExperience);
+        setTimeout(() => {
+          chrome.tabs.create({
+            url: config_default.baseLinkedin + message.urlContacInfo
+          }, (tab) => {
+            setTimeout(() => {
+              chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: ["./scripts/scrapContactInfo.js"]
+              });
+            }, 3e3);
+            setTimeout(() => {
+              chrome.tabs.remove(tab.id);
+            }, 4e3);
+          });
+        }, 3e3);
+        setTimeout(() => {
+          if (profile.urlExtraExperience) {
+            chrome.tabs.create({
+              url: profile.urlExtraExperience
+            }, (tab) => {
+              setTimeout(() => {
+                chrome.scripting.executeScript({
+                  target: { tabId: tab.id },
+                  files: ["./scripts/getExtraExperience.js"]
+                });
+              }, 3e3);
+              setTimeout(() => {
+                chrome.tabs.remove(tab.id);
+              }, 7e3);
             });
-            chrome.tabs.remove(tab.id);
-          }, 1e3);
-        });
+          }
+        }, 7e3);
       });
     } else if (port.name === "safePortUrls") {
       port.onMessage.addListener(async (message) => {

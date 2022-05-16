@@ -3,6 +3,7 @@ const SELECTORS = {
         css:{
             fullname: "h1",
             contactData: ".pv-contact-info__contact-type .pv-contact-info__ci-container > a",
+            extraExperience:"section .pvs-list__container .scaffold-finite-scroll >div>ul .pvs-list__paged-list-item",
         },
         xpath:{
             educationItems: "(//section[.//span[contains(text(),'Educación')]]//ul)[1]/li",
@@ -16,5 +17,6 @@ const SELECTORS = {
     }
 
 }
-
+//$$(".pvs-list .pvs-list__paged-list-item .display-flex .full-width > span .visually-hidden").map(elem=>elem.textContent) 
+//$$(".pvs-list .pvs-list__paged-list-item .display-flex .full-width > span .visually-hidden").map(elem=>elem.textContent)
 export default SELECTORS
