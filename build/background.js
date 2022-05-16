@@ -4750,6 +4750,9 @@
     addExtraExperienceInfo(extraInfo) {
       this.experience = extraInfo;
     }
+    addExtraEducationInfo(extraInfo) {
+      this.education = extraInfo;
+    }
   };
   var model_profile_default = Profile;
 
@@ -4777,14 +4780,18 @@
       port.onMessage.addListener(async (message) => {
         console.log(message.type);
         if (message.type === 1) {
-          console.log(profile);
           console.log("Se llego hasta la carga de contacto");
           profile.addContactInfo({ linkedin: message.linkedin, email: message.email });
         }
         if (message.type === 2) {
           profile.addExtraExperienceInfo(message.arrayOfJobs);
           profile.urlExtraExperience = null;
+        }
+        if (message.type === 3) {
+          console.log(message.arrayOfEducation);
+          profile.addExtraEducationInfo(message.arrayOfEducation);
           console.log(profile);
+          profile.urlExtraEducation = null;
         }
         if (!profile.hasMoreInfo()) {
           fetch("http://localhost:7080/api/v1/profile/create-profile", {
@@ -4792,7 +4799,6 @@
             headers: { "Content-type": "application/json" },
             body: JSON.stringify(profile)
           }).then((response) => response.json()).then((data) => console.log(data)).catch((error) => console.log(error));
-          console.log("datos guardados en indexdb");
           nextProfile_default(tabId, urls, guardian);
           guardian++;
         }
@@ -4840,7 +4846,7 @@
               setTimeout(() => {
                 chrome.scripting.executeScript({
                   target: { tabId: tab.id },
-                  files: ["./scripts/getExtraExperience.js"]
+                  files: ["./scripts/getExtraEducation.js"]
                 });
               }, 3e3);
               setTimeout(() => {

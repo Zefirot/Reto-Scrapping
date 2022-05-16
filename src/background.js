@@ -13,7 +13,7 @@ chrome.runtime.onConnect.addListener(port => {
         port.onMessage.addListener(async message => {
             console.log(message.type);
             if (message.type === 1) {
-                console.log(profile)
+                //console.log(profile)
                 console.log("Se llego hasta la carga de contacto");
                 profile.addContactInfo({ linkedin: message.linkedin, email: message.email })
 
@@ -21,8 +21,14 @@ chrome.runtime.onConnect.addListener(port => {
             if (message.type === 2) {
                 profile.addExtraExperienceInfo(message.arrayOfJobs);
                 profile.urlExtraExperience = null;
-                console.log(profile);
+                //console.log(profile);
                 //console.log("datos guardados en indexdb")
+            }
+            if (message.type === 3){
+                console.log(message.arrayOfEducation)
+                profile.addExtraEducationInfo(message.arrayOfEducation);
+                console.log(profile);
+                profile.urlExtraEducation = null;
             }
 
             if (!profile.hasMoreInfo()) {
@@ -33,31 +39,14 @@ chrome.runtime.onConnect.addListener(port => {
                     body: JSON.stringify(profile)
                 }).then(response => response.json())
                     .then(data => console.log(data))
-                    .catch(error => console.log(error))
-                //await db.profiles.add(profile)
-                console.log("datos guardados en indexdb")
-
+                    .catch(error => {
+                        console.log(error)
+                        await db.profiles.add(profile) //Si falla se envia hacia indexDB
+                    })
+                
                 nextProfile(tabId, urls, guardian);
                 guardian++;
-
             }
-
-
-            /*  if (profile.hasMoreInfo() && message.extraExperience) { //Si se recibio todo el contenido
- 
- 
-                 nextProfile(tabId, urls, guardian); //Pasa de perfil cuando ya se agrego la informacion extra
-                 guardian++;
-             }
-             /* else if (profile.hasMoreInfo() && message.extraEducation){
- 
-             } */
-            //else if (!profile.hasMoreInfo()) {//Pasa de perfil cuando no hay mas informacion extra
-
-
-            //} 
-
-
         })
     }
     else if (port.name === "safePortBasicData") {
@@ -102,7 +91,6 @@ chrome.runtime.onConnect.addListener(port => {
                     });
                 }, 7000);
             }
-
             if (profile.urlExtraEducation) {
                 setTimeout(() => {
                     chrome.tabs.create({
@@ -111,9 +99,8 @@ chrome.runtime.onConnect.addListener(port => {
                         setTimeout(() => { //Esperamos a que se cree la tab antes de inyectar
                             chrome.scripting.executeScript({
                                 target: { tabId: tab.id },
-                                files: ["./scripts/getExtraExperience.js"]
+                                files: ["./scripts/getExtraEducation.js"]
                             });
-                            //chrome.tabs.remove(tab.id);
                         }, 3000)
                         setTimeout(() => {
                             chrome.tabs.remove(tab.id);

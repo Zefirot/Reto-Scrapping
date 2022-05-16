@@ -24,25 +24,25 @@
   };
   var selectors_default = SELECTORS;
 
-  // src/model/model.experience.js
-  var Experience = class {
-    constructor(rol, place, period, description) {
-      this.rol = rol;
-      this.place = place;
+  // src/model/model.education.js
+  var Education = class {
+    constructor(institutionName, degree, period, description) {
+      this.institutionName = institutionName;
+      this.degree = degree;
       this.period = period;
       this.description = description;
     }
   };
-  var model_experience_default = Experience;
+  var model_education_default = Education;
 
-  // src/scripts/getExtraExperience.js
-  var arrayOfJobs = [];
-  var extraExperience = $$(selectors_default.profile.css.extraExperience);
+  // src/scripts/getExtraEducation.js
+  var arrayOfEducation = [];
+  var extraExperience = $$(selectors_default.profile.css.extraEducation);
   for (let i = 0; i < extraExperience.length; i++) {
     const element = extraExperience[i];
-    profile = new model_experience_default(element.querySelector(".display-flex .mr1 .visually-hidden")?.textContent, element.querySelector(".display-flex .t-14 .visually-hidden")?.innerText, element.querySelector(".display-flex .t-14.t-normal.t-black--light .visually-hidden")?.innerText, element.querySelectorAll(".display-flex .t-14.t-normal.t-black--light .visually-hidden")[1]?.textContent, element.querySelector(".pvs-list__outer-container .pvs-list .visually-hidden")?.innerText);
-    arrayOfJobs.push(profile);
+    const education = new model_education_default(element.querySelector(".display-flex .mr1 .visually-hidden")?.textContent, element.querySelector(".display-flex .t-14 .visually-hidden")?.innerText, element.querySelector(".display-flex .t-14.t-normal.t-black--light .visually-hidden")?.innerText, element.querySelectorAll(".display-flex .t-14.t-normal.t-black--light .visually-hidden")[1]?.textContent, element.querySelector(".pvs-list__outer-container .pvs-list .visually-hidden")?.innerText);
+    arrayOfEducation.push(education);
   }
   var port = chrome.runtime.connect({ name: "safePort" });
-  port.postMessage({ arrayOfJobs, type: 2 });
+  port.postMessage({ arrayOfEducation, type: 3 });
 })();

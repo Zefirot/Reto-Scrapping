@@ -48,7 +48,8 @@
       css: {
         fullname: "h1",
         contactData: ".pv-contact-info__contact-type .pv-contact-info__ci-container > a",
-        extraExperience: "section .pvs-list__container .scaffold-finite-scroll >div>ul .pvs-list__paged-list-item"
+        extraExperience: "section .pvs-list__container .scaffold-finite-scroll >div>ul .pvs-list__paged-list-item",
+        extraEducation: ".scaffold-finite-scroll__content > ul> li"
       },
       xpath: {
         educationItems: "(//section[.//span[contains(text(),'Educaci\xF3n')]]//ul)[1]/li",
@@ -107,7 +108,7 @@
       }
       const urlExtraExperience = extraInfo.find((elem) => elem.includes("expe"));
       const urlExtraEducation = extraInfo.find((elem) => elem.includes("education"));
-      const urlContacInfo = contacInfo.attributes.href.value;
+      const urlContacInfo = contacInfo?.attributes.href.value;
       let port = chrome.runtime.connect({ name: "safePortBasicData" });
       port.postMessage({
         fullName,

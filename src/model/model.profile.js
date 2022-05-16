@@ -19,6 +19,10 @@ class Profile{
     addExtraExperienceInfo(extraInfo){
         this.experience = extraInfo;
     }
+
+    addExtraEducationInfo(extraInfo){
+        this.education = extraInfo;
+    }
 }
 
 export default Profile

@@ -28,8 +28,6 @@ waitForElement('h1')
             arrayOfJobs.push(profile);
          }
 
-
-         //$x("(//section[.//span[contains(text(),'Educación')]]//ul)[1]/li").map(elem => elem.querySelectorAll('span[aria-hidden="true"]'))
          let arrayOfEducation = [];
          for (let i = 0; i < educationItems.length; i++) {
             const element = educationItems[i];
@@ -42,15 +40,9 @@ waitForElement('h1')
             arrayOfEducation.push(education);
          }
 
-         /* const basicEducation = educationItems
-                                    .map(element=> $('span[aria-hidden="true"]',element)?.textContent);
- */
-
          const urlExtraExperience = extraInfo.find(elem => elem.includes("expe"));
-
          const urlExtraEducation = extraInfo.find(elem => elem.includes("education"));
-
-         const urlContacInfo = contacInfo.attributes.href.value;
+         const urlContacInfo = contacInfo?.attributes.href.value;
 
          let port = chrome.runtime.connect({ name: "safePortBasicData" });
          port.postMessage({
