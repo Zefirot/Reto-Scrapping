@@ -39,7 +39,6 @@
   var extraExperience = $$(selectors_default.profile.css.extraExperience);
   for (let i = 0; i < extraExperience.length; i++) {
     const element = extraExperience[i];
-    console.log(element);
     profile = new model_experience_default(element.querySelector(".display-flex .mr1 .visually-hidden")?.textContent, element.querySelector(".display-flex .t-14 .visually-hidden")?.innerText, element.querySelector(".display-flex .t-14.t-normal.t-black--light .visually-hidden")?.innerText, element.querySelectorAll(".display-flex .t-14.t-normal.t-black--light .visually-hidden")[1]?.textContent, element.querySelector(".pvs-list__outer-container .pvs-list .visually-hidden")?.innerText);
     arrayOfJobs.push(profile);
   }

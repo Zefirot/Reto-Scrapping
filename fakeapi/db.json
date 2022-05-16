@@ -1,18 +1,98 @@
 {
   "profiles": [
     {
-      "fullName": "ANDERSON SINCHE",
-      "pruebaExperience": [
-        "CTO",
-        "Jefe de Sistemas",
-        "Scotiabank"
+      "fullName": "Marcos Mejias",
+      "experience": [
+        {
+          "rol": "programador",
+          "place": "Desarrollador externo",
+          "period": "oct. 2011 - actualidad · 10 años 8 meses"
+        },
+        {
+          "rol": "Venta al publico",
+          "place": "Km 129",
+          "period": "mar. 2013 - mar. 2015 · 2 años 1 mes"
+        },
+        {
+          "rol": "trabajos generales",
+          "place": "serenna engranages",
+          "period": "ene. 2007 - dic. 2007 · 1 año"
+        }
       ],
-      "pruebaEducation": [
-        "PAD-Escuela de Direccion",
-        "SYPSOFT360",
-        "Universidad Peruana de Ciencias Aplicadas"
+      "education": [
+        {
+          "institutionName": "Universidad Tecnológica Nacional",
+          "degree": "tecnico superior en programacion, tecnologias .net",
+          "period": "2009 - 2011"
+        }
       ],
+      "contactInfo": {
+        "linkedin": "https://www.linkedin.com/in/marcos-mejias-84a4bb26"
+      },
       "id": 1
+    },
+    {
+      "fullName": "Cristian Beraha",
+      "experience": [
+        {
+          "rol": "Ingeniero / Líder DevOps",
+          "place": "Citibank N.A.",
+          "period": "oct. 2004 - actualidad · 17 años 8 meses",
+          "description": "Buenos Aires"
+        },
+        {
+          "rol": "Líder Tecnico en Citi",
+          "place": "ITR",
+          "period": "2004 - 2008 · 4 años"
+        },
+        {
+          "rol": "Team Leader",
+          "place": "IBM Argentina",
+          "period": "ene. 2004 - sept. 2004 · 9 meses"
+        },
+        {
+          "rol": "Consultor",
+          "place": "Various Financials Firms",
+          "period": "ene. 2001 - ene. 2004 · 3 años 1 mes"
+        },
+        {
+          "rol": "Analista Programador",
+          "place": "IBM Argentina",
+          "period": "nov. 2002 - ago. 2003 · 10 meses"
+        },
+        {
+          "rol": "Analista Programador",
+          "place": "Tyssa Telecomunicaciones y Sistemas S.A.",
+          "period": "dic. 1998 - abr. 2001 · 2 años 5 meses"
+        },
+        {
+          "rol": "Analista Programador",
+          "place": "Algoritmos & Aplicaciones SRL",
+          "period": "1996 - 1998 · 2 años"
+        }
+      ],
+      "education": [
+        {
+          "institutionName": "Universidad Centro de Altos Estudios en Ciencias Exactas",
+          "degree": "BS, Computer Systems",
+          "period": "1999 - 2005"
+        },
+        {
+          "institutionName": "COCREAR Argentina",
+          "degree": "Coaching",
+          "period": "2009 - 2009"
+        },
+        {
+          "institutionName": "Universidad de Palermo",
+          "degree": "Executive Program, Real-State Development",
+          "period": "2006 - 2006"
+        }
+      ],
+      "urlExtraExperience": null,
+      "contactInfo": {
+        "linkedin": "https://www.linkedin.com/in/cristianberaha"
+      },
+      "id": 2
     }
   ]
 }

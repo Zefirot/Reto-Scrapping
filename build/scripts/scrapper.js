@@ -63,6 +63,28 @@
   };
   var selectors_default = SELECTORS;
 
+  // src/model/model.experience.js
+  var Experience = class {
+    constructor(rol, place, period, description) {
+      this.rol = rol;
+      this.place = place;
+      this.period = period;
+      this.description = description;
+    }
+  };
+  var model_experience_default = Experience;
+
+  // src/model/model.education.js
+  var Education = class {
+    constructor(institutionName, degree, period, description) {
+      this.institutionName = institutionName;
+      this.degree = degree;
+      this.period = period;
+      this.description = description;
+    }
+  };
+  var model_education_default = Education;
+
   // src/scripts/scrapper.js
   waitForElement_default("h1").then(() => {
     autoscrolling_default(50).then(() => {
@@ -71,16 +93,26 @@
       const educationItems = $x(selectors_default.profile.xpath.educationItems);
       const extraInfo = $$(selectors_default.search.urlExtraInfo).map((elem) => elem.attributes.href.value);
       const contacInfo = $(selectors_default.search.urlContacInfo);
-      const basicExperience = experienceItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
-      const basicEducation = educationItems.map((element) => $('span[aria-hidden="true"]', element)?.textContent);
+      let arrayOfJobs = [];
+      for (let i = 0; i < experienceItems.length; i++) {
+        const element = experienceItems[i];
+        profile = new model_experience_default(element.querySelector(".display-flex .mr1 .visually-hidden")?.textContent, element.querySelector(".display-flex .t-14 .visually-hidden")?.innerText, element.querySelector(".display-flex .t-14.t-normal.t-black--light .visually-hidden")?.innerText, element.querySelectorAll(".display-flex .t-14.t-normal.t-black--light .visually-hidden")[1]?.textContent, element.querySelector(".pvs-list__outer-container .pvs-list .visually-hidden")?.innerText);
+        arrayOfJobs.push(profile);
+      }
+      let arrayOfEducation = [];
+      for (let i = 0; i < educationItems.length; i++) {
+        const element = educationItems[i];
+        let education = new model_education_default(element.querySelector(".mr1 .visually-hidden")?.innerText, element.querySelector(".t-14 .visually-hidden")?.innerText, element.querySelector(".t-black--light .visually-hidden")?.innerText, element.querySelector(".pv-shared-text-with-see-more .visually-hidden")?.innerText);
+        arrayOfEducation.push(education);
+      }
       const urlExtraExperience = extraInfo.find((elem) => elem.includes("expe"));
       const urlExtraEducation = extraInfo.find((elem) => elem.includes("education"));
       const urlContacInfo = contacInfo.attributes.href.value;
       let port = chrome.runtime.connect({ name: "safePortBasicData" });
       port.postMessage({
         fullName,
-        basicExperience,
-        basicEducation,
+        arrayOfJobs,
+        arrayOfEducation,
         urlExtraExperience,
         urlExtraEducation,
         urlContacInfo

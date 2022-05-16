@@ -10,9 +10,10 @@ let profile;
 
 chrome.runtime.onConnect.addListener(port => {
     if (port.name === "safePort") {
-        port.onMessage.addListener(message => {
+        port.onMessage.addListener(async message => {
             console.log(message.type);
             if (message.type === 1) {
+                console.log(profile)
                 console.log("Se llego hasta la carga de contacto");
                 profile.addContactInfo({ linkedin: message.linkedin, email: message.email })
 
@@ -25,6 +26,15 @@ chrome.runtime.onConnect.addListener(port => {
             }
             console.log(profile.urlExtraExperience);
             if (!profile.hasMoreInfo()) {
+
+                fetch("http://localhost:3000/profiles", {
+                    method: "POST",
+                    headers: { "Content-type": "application/json" },
+                    body: JSON.stringify(profile)
+                }).then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.log(error))
+                //await db.profiles.add(profile)
                 console.log("datos guardados en indexdb")
 
                 nextProfile(tabId, urls, guardian);
@@ -43,24 +53,18 @@ chrome.runtime.onConnect.addListener(port => {
  
              } */
             //else if (!profile.hasMoreInfo()) {//Pasa de perfil cuando no hay mas informacion extra
-            //await db.profiles.add(message)
+
 
             //} 
 
-            /* fetch("http://localhost:3000/profiles",{
-                method: "POST",
-                headers:{"Content-type":"application/json"},
-                body:JSON.stringify(message)
-            }).then(response=>response.json())
-                .then(data=>console.log(data))
-                .catch(error=>console.log(error)) */
+
         })
     }
     else if (port.name === "safePortBasicData") {
         port.onMessage.addListener(async message => {
             profile = new Profile(message.fullName,
-                message.basicExperience,
-                message.basicEducation,
+                message.arrayOfJobs,
+                message.arrayOfEducation,
                 message.urlExtraExperience,
                 message.urlExtraEducation);
 
@@ -81,10 +85,10 @@ chrome.runtime.onConnect.addListener(port => {
                     setTimeout(() => {
                         chrome.tabs.remove(tab.id);
                     }, 4000);
-    
+
                 });
             }, 3000);
-            
+
 
             setTimeout(() => {
                 if (profile.urlExtraExperience) {
@@ -103,7 +107,7 @@ chrome.runtime.onConnect.addListener(port => {
                         }, 7000);
                     });
                 }
-            },7000);
+            }, 7000);
 
 
             //if (message.urlExtraEducation) {

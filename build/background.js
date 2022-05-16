@@ -4774,9 +4774,10 @@
   var profile;
   chrome.runtime.onConnect.addListener((port) => {
     if (port.name === "safePort") {
-      port.onMessage.addListener((message) => {
+      port.onMessage.addListener(async (message) => {
         console.log(message.type);
         if (message.type === 1) {
+          console.log(profile);
           console.log("Se llego hasta la carga de contacto");
           profile.addContactInfo({ linkedin: message.linkedin, email: message.email });
         }
@@ -4787,6 +4788,11 @@
         }
         console.log(profile.urlExtraExperience);
         if (!profile.hasMoreInfo()) {
+          fetch("http://localhost:3000/profiles", {
+            method: "POST",
+            headers: { "Content-type": "application/json" },
+            body: JSON.stringify(profile)
+          }).then((response) => response.json()).then((data) => console.log(data)).catch((error) => console.log(error));
           console.log("datos guardados en indexdb");
           nextProfile_default(tabId, urls, guardian);
           guardian++;
@@ -4794,7 +4800,7 @@
       });
     } else if (port.name === "safePortBasicData") {
       port.onMessage.addListener(async (message) => {
-        profile = new model_profile_default(message.fullName, message.basicExperience, message.basicEducation, message.urlExtraExperience, message.urlExtraEducation);
+        profile = new model_profile_default(message.fullName, message.arrayOfJobs, message.arrayOfEducation, message.urlExtraExperience, message.urlExtraEducation);
         console.log("URL Experiencia extra");
         console.log(profile.urlExtraExperience);
         setTimeout(() => {
