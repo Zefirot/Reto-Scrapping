@@ -24,10 +24,10 @@ chrome.runtime.onConnect.addListener(port => {
                 console.log(profile);
                 //console.log("datos guardados en indexdb")
             }
-            console.log(profile.urlExtraExperience);
+
             if (!profile.hasMoreInfo()) {
 
-                fetch("http://localhost:3000/profiles", {
+                fetch("http://localhost:7080/api/v1/profile/create-profile", {
                     method: "POST",
                     headers: { "Content-type": "application/json" },
                     body: JSON.stringify(profile)
@@ -63,13 +63,10 @@ chrome.runtime.onConnect.addListener(port => {
     else if (port.name === "safePortBasicData") {
         port.onMessage.addListener(async message => {
             profile = new Profile(message.fullName,
-                message.arrayOfJobs,
-                message.arrayOfEducation,
-                message.urlExtraExperience,
-                message.urlExtraEducation);
-
-            console.log("URL Experiencia extra");
-            console.log(profile.urlExtraExperience);
+                                    message.arrayOfJobs,
+                                    message.arrayOfEducation,
+                                    message.urlExtraExperience,
+                                    message.urlExtraEducation);
 
             setTimeout(() => {
                 chrome.tabs.create({
@@ -80,20 +77,36 @@ chrome.runtime.onConnect.addListener(port => {
                             target: { tabId: tab.id },
                             files: ["./scripts/scrapContactInfo.js"]
                         });
-                        //chrome.tabs.remove(tab.id);
                     }, 3000)
                     setTimeout(() => {
                         chrome.tabs.remove(tab.id);
-                    }, 4000);
+                    }, 6000);
 
                 });
             }, 3000);
 
-
-            setTimeout(() => {
-                if (profile.urlExtraExperience) {
+            if (profile.urlExtraExperience) {
+                setTimeout(() => {
                     chrome.tabs.create({
                         url: profile.urlExtraExperience
+                    }, tab => {
+                        setTimeout(() => { //Esperamos a que se cree la tab antes de inyectar
+                            chrome.scripting.executeScript({
+                                target: { tabId: tab.id },
+                                files: ["./scripts/getExtraExperience.js"]
+                            });
+                        }, 3000)
+                        setTimeout(() => {
+                            chrome.tabs.remove(tab.id);
+                        }, 7000);
+                    });
+                }, 7000);
+            }
+
+            if (profile.urlExtraEducation) {
+                setTimeout(() => {
+                    chrome.tabs.create({
+                        url: profile.urlExtraEducation
                     }, tab => {
                         setTimeout(() => { //Esperamos a que se cree la tab antes de inyectar
                             chrome.scripting.executeScript({
@@ -106,24 +119,9 @@ chrome.runtime.onConnect.addListener(port => {
                             chrome.tabs.remove(tab.id);
                         }, 7000);
                     });
-                }
-            }, 7000);
 
-
-            //if (message.urlExtraEducation) {
-            //    await chrome.tabs.create({
-            //        url: message.urlExtraEducation
-            //    }, tab => {
-            //        setTimeout(async () => { //Esperamos a que se cree la tab antes de inyectar
-            //            await chrome.scripting.executeScript({
-            //                target: { tabId: tab.id },
-            //                files: ["./scripts/scrapContactInfo.js"]
-            //            });
-            //            chrome.tabs.remove(tab.id);
-            //        }, 1000)
-            //    });
-            //}
-
+                }, 7000);
+            }
         });
     }
     else if (port.name === "safePortUrls") {

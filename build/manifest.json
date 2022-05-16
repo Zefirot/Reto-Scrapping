@@ -11,6 +11,7 @@
     },
     "permissions": ["tabs", "scripting", "activeTab"],
     "host_permissions": [
-        "https://www.linkedin.com/*"
+        "https://www.linkedin.com/*",
+        "http://localhost:7080/*"
     ]
 }

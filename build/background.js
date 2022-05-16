@@ -4786,9 +4786,8 @@
           profile.urlExtraExperience = null;
           console.log(profile);
         }
-        console.log(profile.urlExtraExperience);
         if (!profile.hasMoreInfo()) {
-          fetch("http://localhost:3000/profiles", {
+          fetch("http://localhost:7080/api/v1/profile/create-profile", {
             method: "POST",
             headers: { "Content-type": "application/json" },
             body: JSON.stringify(profile)
@@ -4801,8 +4800,6 @@
     } else if (port.name === "safePortBasicData") {
       port.onMessage.addListener(async (message) => {
         profile = new model_profile_default(message.fullName, message.arrayOfJobs, message.arrayOfEducation, message.urlExtraExperience, message.urlExtraEducation);
-        console.log("URL Experiencia extra");
-        console.log(profile.urlExtraExperience);
         setTimeout(() => {
           chrome.tabs.create({
             url: config_default.baseLinkedin + message.urlContacInfo
@@ -4815,11 +4812,11 @@
             }, 3e3);
             setTimeout(() => {
               chrome.tabs.remove(tab.id);
-            }, 4e3);
+            }, 6e3);
           });
         }, 3e3);
-        setTimeout(() => {
-          if (profile.urlExtraExperience) {
+        if (profile.urlExtraExperience) {
+          setTimeout(() => {
             chrome.tabs.create({
               url: profile.urlExtraExperience
             }, (tab) => {
@@ -4833,8 +4830,25 @@
                 chrome.tabs.remove(tab.id);
               }, 7e3);
             });
-          }
-        }, 7e3);
+          }, 7e3);
+        }
+        if (profile.urlExtraEducation) {
+          setTimeout(() => {
+            chrome.tabs.create({
+              url: profile.urlExtraEducation
+            }, (tab) => {
+              setTimeout(() => {
+                chrome.scripting.executeScript({
+                  target: { tabId: tab.id },
+                  files: ["./scripts/getExtraExperience.js"]
+                });
+              }, 3e3);
+              setTimeout(() => {
+                chrome.tabs.remove(tab.id);
+              }, 7e3);
+            });
+          }, 7e3);
+        }
       });
     } else if (port.name === "safePortUrls") {
       port.onMessage.addListener(async (message) => {
