@@ -2,8 +2,6 @@ const autoscrolling = pixels => new Promise((resolve, reject)=>{
     
     let pixelstoScroll = pixels;
 
-    console.log(pixelstoScroll)
-
     const idInterval = setInterval(()=>{
         window.scrollTo(0,pixelstoScroll)
         pixelstoScroll+=pixels;

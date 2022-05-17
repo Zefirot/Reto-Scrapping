@@ -1,6 +1,5 @@
-const nextProfile = (tabId, urls, guardian) => {
-    if (guardian < urls.length) {
-        chrome.tabs.update(tabId, { url: urls[guardian] })
+const nextProfile = (tabId, url) => {
+        chrome.tabs.update(tabId, { url })
         setTimeout(() => {
             chrome.scripting.executeScript({
                 target: { tabId },
@@ -8,6 +7,5 @@ const nextProfile = (tabId, urls, guardian) => {
             })
         }, 5000)
     }
-}
 
 export default nextProfile;

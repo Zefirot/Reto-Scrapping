@@ -6,6 +6,44 @@
   };
   var config_default = URLS;
 
+  // src/model/model.profile.js
+  var Profile = class {
+    constructor(fullName, experience, education, urlExtraExperience, urlExtraEducation) {
+      this.fullName = fullName;
+      this.experience = experience;
+      this.education = education;
+      this.urlExtraExperience = urlExtraExperience;
+      this.urlExtraEducation = urlExtraEducation;
+    }
+    hasMoreInfo() {
+      return this.urlExtraExperience || this.urlExtraEducation;
+    }
+    addContactInfo(contactInfo) {
+      this.contactInfo = contactInfo;
+    }
+    addExtraExperienceInfo(extraInfo) {
+      this.experience = extraInfo;
+      this.urlExtraExperience = null;
+    }
+    addExtraEducationInfo(extraInfo) {
+      this.education = extraInfo;
+      this.urlExtraEducation = null;
+    }
+  };
+  var model_profile_default = Profile;
+
+  // src/functions/nextProfile.js
+  var nextProfile = (tabId2, url) => {
+    chrome.tabs.update(tabId2, { url });
+    setTimeout(() => {
+      chrome.scripting.executeScript({
+        target: { tabId: tabId2 },
+        files: ["./scripts/scrapper.js"]
+      });
+    }, 5e3);
+  };
+  var nextProfile_default = nextProfile;
+
   // node_modules/dexie/dist/modern/dexie.mjs
   var _global = typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : global;
   var keys = Object.keys;
@@ -4732,95 +4770,62 @@
     profiles: "++id, fullname, pruebaExperience, pruebaEducation"
   });
 
-  // src/model/model.profile.js
-  var Profile = class {
-    constructor(fullName, experience, education, urlExtraExperience, urlExtraEducation) {
-      this.fullName = fullName;
-      this.experience = experience;
-      this.education = education;
-      this.urlExtraExperience = urlExtraExperience;
-      this.urlExtraEducation = urlExtraEducation;
-    }
-    hasMoreInfo() {
-      return this.urlExtraExperience || this.urlExtraEducation;
-    }
-    addContactInfo(contactInfo) {
-      this.contactInfo = contactInfo;
-    }
-    addExtraExperienceInfo(extraInfo) {
-      this.experience = extraInfo;
-    }
-    addExtraEducationInfo(extraInfo) {
-      this.education = extraInfo;
-    }
+  // src/functions/sendData.js
+  var sendData = async (URL, DATA) => {
+    fetch(URL, {
+      method: "POST",
+      headers: { "Content-type": "application/json" },
+      body: JSON.stringify(DATA)
+    }).then((response) => response.json()).then((data) => console.log(data)).catch((error) => {
+      console.log("No se pudo guardar los datos en la API");
+      console.log("Intentando guardar en IndexDB");
+      db.profiles.add(DATA).then(console.log("Se guardo en IndexDB"));
+    });
   };
-  var model_profile_default = Profile;
-
-  // src/functions/nextProfile.js
-  var nextProfile = (tabId2, urls2, guardian2) => {
-    if (guardian2 < urls2.length) {
-      chrome.tabs.update(tabId2, { url: urls2[guardian2] });
-      setTimeout(() => {
-        chrome.scripting.executeScript({
-          target: { tabId: tabId2 },
-          files: ["./scripts/scrapper.js"]
-        });
-      }, 5e3);
-    }
-  };
-  var nextProfile_default = nextProfile;
+  var sendData_default = sendData;
 
   // src/background.js
   var tabId;
   var guardian = 0;
   var urls;
   var profile;
+  var urlActualPage;
   chrome.runtime.onConnect.addListener((port) => {
     if (port.name === "safePort") {
       port.onMessage.addListener(async (message) => {
-        console.log(message.type);
         if (message.type === 1) {
-          console.log("Se llego hasta la carga de contacto");
           profile.addContactInfo({ linkedin: message.linkedin, email: message.email });
         }
         if (message.type === 2) {
           profile.addExtraExperienceInfo(message.arrayOfJobs);
-          profile.urlExtraExperience = null;
         }
         if (message.type === 3) {
-          console.log(message.arrayOfEducation);
           profile.addExtraEducationInfo(message.arrayOfEducation);
-          console.log(profile);
-          profile.urlExtraEducation = null;
         }
         if (!profile.hasMoreInfo()) {
-          fetch("http://localhost:7080/api/v1/profile/create-profile", {
-            method: "POST",
-            headers: { "Content-type": "application/json" },
-            body: JSON.stringify(profile)
-          }).then((response) => response.json()).then((data) => console.log(data)).catch((error) => console.log(error));
-          nextProfile_default(tabId, urls, guardian);
-          guardian++;
+          await sendData_default("http://localhost:7080/api/v1/profile/create-profile", profile);
+          if (guardian < urls.length) {
+            nextProfile_default(tabId, urls[guardian]);
+            guardian++;
+          }
         }
       });
     } else if (port.name === "safePortBasicData") {
       port.onMessage.addListener(async (message) => {
         profile = new model_profile_default(message.fullName, message.arrayOfJobs, message.arrayOfEducation, message.urlExtraExperience, message.urlExtraEducation);
-        setTimeout(() => {
-          chrome.tabs.create({
-            url: config_default.baseLinkedin + message.urlContacInfo
-          }, (tab) => {
-            setTimeout(() => {
-              chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ["./scripts/scrapContactInfo.js"]
-              });
-            }, 3e3);
-            setTimeout(() => {
-              chrome.tabs.remove(tab.id);
-            }, 6e3);
-          });
-        }, 3e3);
+        chrome.tabs.create({
+          url: config_default.baseLinkedin + message.urlContacInfo
+        }, (tab) => {
+          setTimeout(() => {
+            chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              files: ["./scripts/scrapContactInfo.js"]
+            });
+          }, 3e3);
+          setTimeout(() => {
+            chrome.tabs.remove(tab.id);
+          }, 6e3);
+        });
         if (profile.urlExtraExperience) {
           setTimeout(() => {
             chrome.tabs.create({
@@ -4834,9 +4839,9 @@
               }, 3e3);
               setTimeout(() => {
                 chrome.tabs.remove(tab.id);
-              }, 7e3);
+              }, 6e3);
             });
-          }, 7e3);
+          }, 3e3);
         }
         if (profile.urlExtraEducation) {
           setTimeout(() => {
@@ -4851,9 +4856,9 @@
               }, 3e3);
               setTimeout(() => {
                 chrome.tabs.remove(tab.id);
-              }, 7e3);
+              }, 6e3);
             });
-          }, 7e3);
+          }, 6e3);
         }
       });
     } else if (port.name === "safePortUrls") {
@@ -4871,8 +4876,9 @@
       });
     } else if (port.name === "popUpClick") {
       port.onMessage.addListener(async (message) => {
+        urlActualPage = config_default.base + message.filterTo;
         chrome.tabs.create({
-          url: config_default.base + message.filterTo
+          url: urlActualPage
         }, (tab) => {
           tabId = tab.id;
           setTimeout(() => {

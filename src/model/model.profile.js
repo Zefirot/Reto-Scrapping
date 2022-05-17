@@ -1,7 +1,6 @@
 class Profile{
     constructor(fullName,experience,education,urlExtraExperience,urlExtraEducation){
         this.fullName = fullName;
-        //this.contactInfo = contactInfo;
         this.experience = experience;
         this.education = education;
         this.urlExtraExperience = urlExtraExperience;
@@ -18,10 +17,12 @@ class Profile{
 
     addExtraExperienceInfo(extraInfo){
         this.experience = extraInfo;
+        this.urlExtraExperience = null;
     }
 
     addExtraEducationInfo(extraInfo){
         this.education = extraInfo;
+        this.urlExtraEducation = null;
     }
 }
 

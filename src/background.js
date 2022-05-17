@@ -1,78 +1,58 @@
 import URLS from "./config.js";
-import { db } from "./lib/db.js";
 import Profile from './model/model.profile';
 import nextProfile from './functions/nextProfile';
+import sendData from './functions/sendData';
 
 let tabId;
 let guardian = 0
 let urls;
 let profile;
+let urlActualPage;
 
 chrome.runtime.onConnect.addListener(port => {
     if (port.name === "safePort") {
         port.onMessage.addListener(async message => {
-            console.log(message.type);
             if (message.type === 1) {
-                //console.log(profile)
-                console.log("Se llego hasta la carga de contacto");
                 profile.addContactInfo({ linkedin: message.linkedin, email: message.email })
-
             }
             if (message.type === 2) {
                 profile.addExtraExperienceInfo(message.arrayOfJobs);
-                profile.urlExtraExperience = null;
-                //console.log(profile);
-                //console.log("datos guardados en indexdb")
             }
-            if (message.type === 3){
-                console.log(message.arrayOfEducation)
+            if (message.type === 3) {
                 profile.addExtraEducationInfo(message.arrayOfEducation);
-                console.log(profile);
-                profile.urlExtraEducation = null;
             }
-
             if (!profile.hasMoreInfo()) {
+                await sendData("http://localhost:7080/api/v1/profile/create-profile", profile);
 
-                fetch("http://localhost:7080/api/v1/profile/create-profile", {
-                    method: "POST",
-                    headers: { "Content-type": "application/json" },
-                    body: JSON.stringify(profile)
-                }).then(response => response.json())
-                    .then(data => console.log(data))
-                    .catch(error => {
-                        console.log(error)
-                        await db.profiles.add(profile) //Si falla se envia hacia indexDB
-                    })
-                
-                nextProfile(tabId, urls, guardian);
-                guardian++;
+                if (guardian < urls.length) {
+                    nextProfile(tabId, urls[guardian]);
+                    guardian ++;
+                } 
             }
         })
     }
     else if (port.name === "safePortBasicData") {
         port.onMessage.addListener(async message => {
             profile = new Profile(message.fullName,
-                                    message.arrayOfJobs,
-                                    message.arrayOfEducation,
-                                    message.urlExtraExperience,
-                                    message.urlExtraEducation);
+                message.arrayOfJobs,
+                message.arrayOfEducation,
+                message.urlExtraExperience,
+                message.urlExtraEducation);
 
-            setTimeout(() => {
-                chrome.tabs.create({
-                    url: URLS.baseLinkedin + message.urlContacInfo
-                }, tab => {
-                    setTimeout(() => { //Esperamos a que se cree la tab antes de inyectar
-                        chrome.scripting.executeScript({
-                            target: { tabId: tab.id },
-                            files: ["./scripts/scrapContactInfo.js"]
-                        });
-                    }, 3000)
-                    setTimeout(() => {
-                        chrome.tabs.remove(tab.id);
-                    }, 6000);
+            chrome.tabs.create({
+                url: URLS.baseLinkedin + message.urlContacInfo
+            }, tab => {
+                setTimeout(() => { //Esperamos a que se cree la tab antes de inyectar
+                    chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        files: ["./scripts/scrapContactInfo.js"]
+                    });
+                }, 3000)
+                setTimeout(() => {
+                    chrome.tabs.remove(tab.id);
+                }, 6000);
 
-                });
-            }, 3000);
+            });
 
             if (profile.urlExtraExperience) {
                 setTimeout(() => {
@@ -87,9 +67,9 @@ chrome.runtime.onConnect.addListener(port => {
                         }, 3000)
                         setTimeout(() => {
                             chrome.tabs.remove(tab.id);
-                        }, 7000);
+                        }, 6000);
                     });
-                }, 7000);
+                }, 3000);
             }
             if (profile.urlExtraEducation) {
                 setTimeout(() => {
@@ -104,10 +84,10 @@ chrome.runtime.onConnect.addListener(port => {
                         }, 3000)
                         setTimeout(() => {
                             chrome.tabs.remove(tab.id);
-                        }, 7000);
+                        }, 6000);
                     });
 
-                }, 7000);
+                }, 6000);
             }
         });
     }
@@ -129,8 +109,9 @@ chrome.runtime.onConnect.addListener(port => {
     }
     else if (port.name === "popUpClick") {
         port.onMessage.addListener(async message => {
+            urlActualPage = URLS.base + message.filterTo
             chrome.tabs.create({
-                url: URLS.base + message.filterTo
+                url: urlActualPage
             }, tab => {
                 tabId = tab.id
                 setTimeout(() => { //Esperamos a que se cree la tab antes de inyectar
